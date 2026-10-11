@@ -46,15 +46,15 @@ public class CollectionSystem : MonoBehaviour
 
         if (DropOffCount >= firstDropOffCount && DropOffCount < secondDropOffCount)
         {
-            timeSystem.maxTime = 75f; // Increase the max time to 75 seconds when the last drop-off count is reached
+            timeSystem.maxTime = 75.9f; // Increase the max time to 75 seconds when the last drop-off count is reached
         }
         else if(DropOffCount >= secondDropOffCount && DropOffCount < lastDropOffCount)
         {
-            timeSystem.maxTime = 90f; // Increase the max time to 90 seconds when the second drop-off count is reached
+            timeSystem.maxTime = 90.9f; // Increase the max time to 90 seconds when the second drop-off count is reached
         }
         else if (DropOffCount >= lastDropOffCount)
         {
-            timeSystem.maxTime = 120f; // Increase the max time to 120 seconds when the first drop-off count is reached
+            timeSystem.maxTime = 120.9f; // Increase the max time to 120 seconds when the first drop-off count is reached
         }
 
 
@@ -103,7 +103,7 @@ public class CollectionSystem : MonoBehaviour
 
 
         // Check if the collided object has the tag "DropOff"
-        if (collision.CompareTag("DropOff"))
+        if (collision.CompareTag("Circle"))
         {
             timeSystem.StoreSystem();
 
@@ -117,14 +117,14 @@ public class CollectionSystem : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D collision)
     {
-        if (collision.CompareTag("DropOff"))
+        if (collision.CompareTag("Circle"))
         {
             timeSystem.pauseTime = true; // Pause the time when the player is in contact with the drop-off area
         }
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.CompareTag("DropOff"))
+        if (collision.CompareTag("Circle"))
         {
             timeSystem.pauseTime = false; // Resume the time when the player exits the drop-off area
         }

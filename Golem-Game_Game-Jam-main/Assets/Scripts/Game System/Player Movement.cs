@@ -1,11 +1,11 @@
 using System.Collections;
-using UnityEditor.Rendering;
 using UnityEngine;
 
 
 public class PlayerMovement : MonoBehaviour
 {
     public TimeSystem timeSystem;
+    public ProjectileScript projectileScript;
     public Camera camera;
     public float speed = 5f;
     public float dashSpeed = 20f;
@@ -19,6 +19,7 @@ public class PlayerMovement : MonoBehaviour
     public Vector2 moveDir;
     public Vector2 lastDirection;
     public Animator animation;
+    public bool knockback;
 
     private void Start()
     {
@@ -140,7 +141,23 @@ public class PlayerMovement : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        rb.linearVelocity = moveDir * speed;
+        if (projectileScript == null && !knockback && !projectileScript.knockback)
+        {
+            rb.linearVelocity = moveDir * speed;
+            return;
+        }
+        if (!projectileScript.knockback && !knockback)
+        {
+            rb.linearVelocity = moveDir * speed;
+        }
+        if (projectileScript.knockback)
+        {
+            StartCoroutine(KnockBackEnd());
+        }
+        else if (knockback)
+        {
+            StartCoroutine(ExplodeKnockBackEnd());
+        }
     }
 
     // Coroutine to handle dashing
@@ -150,5 +167,26 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForSeconds(dashDuration);
         speed = 5f;
         timeSystem.DashTimeLoss();
+    }
+    public IEnumerator KnockBackEnd()
+    {
+        yield return new WaitForSeconds(0.5f);
+        projectileScript.knockback = false;
+        knockback = false;
+
+    }
+    public IEnumerator ExplodeKnockBackEnd()
+    {
+        yield return new WaitForSeconds(1.0f);
+        projectileScript.knockback = false;
+        knockback = false;
+
+    }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Projectile"))
+        {
+            projectileScript = collision.GetComponent<ProjectileScript>();
+        }
     }
 }

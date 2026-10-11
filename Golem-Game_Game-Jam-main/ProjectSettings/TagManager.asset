@@ -8,6 +8,10 @@ TagManager:
   - CommonRock
   - UncommonRock
   - RareRock
+  - NPC1
+  - Circle
+  - Projectile
+  - TimeSystem
   layers:
   - Default
   - TransparentFX
