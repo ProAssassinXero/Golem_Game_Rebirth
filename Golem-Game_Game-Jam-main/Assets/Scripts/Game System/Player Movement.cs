@@ -170,7 +170,7 @@ public class PlayerMovement : MonoBehaviour
     }
     public IEnumerator KnockBackEnd()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.1f);
         projectileScript.knockback = false;
         knockback = false;
 

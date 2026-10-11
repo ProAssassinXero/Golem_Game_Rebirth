@@ -25,17 +25,10 @@ public class NPC1_Respawn : MonoBehaviour
     IEnumerator RespawnTime(int index)
     {
         isRespawning[index] = true;
-        
         yield return new WaitForSeconds(5f);
-        npc[index].GetComponent<NPC_1>().isExploding = false;
-        npc[index].GetComponent<NPC_1>().isShooting = false;
-        npc[index].GetComponent<Collider2D>().enabled = true;
-        npc[index].transform.position = npc[index].GetComponent<NPC_1>().startingPosition;
 
-        if (npc[index] != null)
-        {
-            npc[index].SetActive(true);
-        }
+        npc[index].GetComponent<NPC_1>().ResetNPC();
+        npc[index].SetActive(true);
 
         isRespawning[index] = false;
     }

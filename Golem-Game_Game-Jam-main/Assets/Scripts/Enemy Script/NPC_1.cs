@@ -85,6 +85,14 @@ public class NPC_1 : MonoBehaviour
         if (stateInfo.IsName("Explode") && stateInfo.normalizedTime >= 0.3f && !knockbackDone)
         {
             knockbackDone = true;
+            animator.SetBool("IdleDown", false);
+            animator.SetBool("IdleUp", false);
+            animator.SetBool("IdleLeft", false);
+            animator.SetBool("IdleRight", false);
+            animator.SetBool("WalkDown", false);
+            animator.SetBool("WalkUp", false);
+            animator.SetBool("WalkLeft", false);
+            animator.SetBool("WalkRight", false);
             ExplodeKnockback();
         }
         // Check if the NPC has finished the "Explode" animation and deactivate it
@@ -231,39 +239,18 @@ public class NPC_1 : MonoBehaviour
             gameObject.GetComponent<Collider2D>().enabled = false;
             playerMovement.knockback = true;
         }
+        else
+        {
+            touchingPlayer = false;
+        }
     }
 
     void ExplodeKnockback()
     {
         Vector2 directionToPlayer = player.transform.position - transform.position;
 
-        // Compare absolute values to find out which axis has the stronger offset
-        if (Mathf.Abs(directionToPlayer.x) > Mathf.Abs(directionToPlayer.y))
-        {
-            if (directionToPlayer.x < 0)
-            {
-                Debug.Log("Player is to the left of NPC");
-                knockback(Vector2.left);
-            }
-            else
-            {
-                Debug.Log("Player is to the right of NPC");
-                knockback(Vector2.right);
-            }
-        }
-        else
-        {
-            if (directionToPlayer.y < 0)
-            {
-                Debug.Log("Player is below NPC");
-                knockback(Vector2.down);
-            }
-            else
-            {
-                Debug.Log("Player is above NPC");
-                knockback(Vector2.up);
-            }
-        }
+        if (directionToPlayer == Vector2.zero) directionToPlayer = Vector2.down;
+        knockback(directionToPlayer.normalized);
     }
 
     public void knockback(Vector2 direction)
@@ -272,11 +259,25 @@ public class NPC_1 : MonoBehaviour
         playerMovement.knockback = true;
         player.GetComponent<Rigidbody2D>().AddForce(direction * 70f, ForceMode2D.Impulse); // Apply knockback force to the player
     }
-    private void OnTriggerExit2D(Collider2D collision)
+
+    public void ResetNPC()
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            touchingPlayer = false;
-        }
+        isExploding = false;
+        isShooting = false;
+        halfExploded = false;
+        knockbackDone = false;
+        touchingPlayer = false;
+        inRange = false;
+        movingX = false;
+        movingY = false;
+        atStartingPosition = true;
+
+        transform.position = startingPosition;
+        targetPosition = startingPosition;
+        lastDirection = Vector2.down;
+
+        GetComponent<Collider2D>().enabled = true;
+        animator.SetBool("Explode", false);
+        animator.SetBool("Shooting", false);
     }
 }
