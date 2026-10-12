@@ -5,6 +5,7 @@ using UnityEngine;
 public class ProjectileScript : MonoBehaviour
 {
     public TimeSystem timeSystem;
+    public PlayerMovement playerMovement;
     public GameObject player;
     public GameObject npc;
     public Vector2 direction;
@@ -19,6 +20,7 @@ public class ProjectileScript : MonoBehaviour
     {
         timeSystem = GameObject.FindGameObjectWithTag("TimeSystem").GetComponent<TimeSystem>();
         player = GameObject.FindGameObjectWithTag("Player");
+        playerMovement = player.GetComponent<PlayerMovement>();
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -26,11 +28,17 @@ public class ProjectileScript : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             knockback = true; // Set knockback to true when the projectile hits the player
-            timeSystem.time -= 5f; // Reduce time by 5 seconds when the projectile hits the player
+            timeSystem.time -= 2f; // Reduce time by 2 seconds when the projectile hits the player
             gameObject.GetComponent<Collider2D>().enabled = false; // Disable the collider to prevent further collisions
             gameObject.GetComponent<SpriteRenderer>().enabled = false; // Optionally hide the projectile visually
             player.GetComponent<Rigidbody2D>().AddForce(direction * 10f, ForceMode2D.Impulse); // Apply knockback force to the player
         }
+
+        if (collision.gameObject.CompareTag("Circle"))
+        {
+            Destroy(gameObject); // Destroy the projectile if it collides with a wall
+        }
+
         if (knockback == true)
         {
             StartCoroutine(DestroyProjectileAfterTime());
@@ -40,12 +48,13 @@ public class ProjectileScript : MonoBehaviour
 
         // Check if the collided object has the NPC_1 script
         NPC_1 npcScript = collision.GetComponent<NPC_1>();
-        if (npcScript == null) return;
+        NPC_2 npcScript2 = collision.GetComponent<NPC_2>();
 
-        // Initialize the projectile's movement towards the player
+        // If the collided object doesn't have either NPC script, exit the method
+        if (npcScript == null && npcScript2 == null) return;
+        // Set the NPC and player references based on which NPC script is present
         npc = collision.gameObject;
-        player = npcScript.player;
-        if (player == null) return;
+        player = (npcScript != null) ? npcScript.player : npcScript2.player;
 
         // Calculate the direction from the NPC to the player and set the final destination
         startPos = npc.transform.position;
@@ -66,6 +75,11 @@ public class ProjectileScript : MonoBehaviour
         if (((Vector2)transform.position - finalDestination).sqrMagnitude < 0.0001f)
         {
             Destroy(gameObject);
+        }
+        if (playerMovement.inCircle)
+        {
+            Destroy(gameObject);
+
         }
     }
 

@@ -5,11 +5,14 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     public TimeSystem timeSystem;
+    public RoomScript roomScript;
     public ProjectileScript projectileScript;
+    public NPC_2[] nPC_2s;
     public Camera camera;
     public float speed = 5f;
     public float dashSpeed = 20f;
     public float dashDuration = 0.1f;
+    public bool inCircle;
     public bool moveUp = false;
     public bool moveDown = false;
     public bool moveLeft = false;
@@ -25,6 +28,7 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         animation = GetComponent<Animator>();
+        roomScript = GameObject.FindGameObjectWithTag("RoomScript").GetComponent<RoomScript>();
     }
 
     // Update is called once per frame
@@ -174,6 +178,12 @@ public class PlayerMovement : MonoBehaviour
         projectileScript.knockback = false;
         knockback = false;
 
+        for (int i = 0; i < nPC_2s.Length; i++)
+        {
+            nPC_2s[i].slashing = false;
+            nPC_2s[i].touchingPlayer = false;
+            nPC_2s[i].animator.SetBool("Slashing", false);
+        }
     }
     public IEnumerator ExplodeKnockBackEnd()
     {
@@ -187,6 +197,27 @@ public class PlayerMovement : MonoBehaviour
         if (collision.CompareTag("Projectile"))
         {
             projectileScript = collision.GetComponent<ProjectileScript>();
+        }
+
+        if (collision.gameObject.CompareTag("groundFloorStairs"))
+        {
+            transform.position = roomScript.spawnPoints[1].transform.position;
+        }
+        if (collision.gameObject.CompareTag("firstFloorStairs"))
+        {
+            transform.position = roomScript.spawnPoints[0].transform.position;
+        }
+        if (collision.gameObject.CompareTag("Circle"))
+        {
+            inCircle = true;
+        }
+    }
+    
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Circle"))
+        {
+            inCircle = false;
         }
     }
 }

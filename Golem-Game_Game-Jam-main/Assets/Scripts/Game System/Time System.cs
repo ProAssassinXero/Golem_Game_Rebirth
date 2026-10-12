@@ -54,7 +54,7 @@ public class TimeSystem : MonoBehaviour
         {
             if (collectionSystem.storeRep[i].color == Color.red)
             {
-                time += 10f;
+                time += 20f;
                 collectionSystem.storeRep[i].color = Color.white;
             }
             else if (collectionSystem.storeRep[i].color == Color.yellow)

@@ -12,6 +12,9 @@ TagManager:
   - Circle
   - Projectile
   - TimeSystem
+  - RoomScript
+  - groundFloorStairs
+  - firstFloorStairs
   layers:
   - Default
   - TransparentFX

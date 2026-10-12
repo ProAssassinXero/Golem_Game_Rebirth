@@ -1,26 +1,24 @@
 using System.Collections;
 using UnityEngine;
 
-public class NPC_1 : MonoBehaviour
+public class NPC_2 : MonoBehaviour
 {
     public GameObject player;
     public GameObject projectilePrefab;
     public PlayerMovement playerMovement;
+    public TimeSystem timeSystem;
     public Animator animator;
     public bool inRange;
     public float speed = 3;
-    public float stopDistance = 1.5f;
+    public float stopDistance = 0f;
     public int range = 8;
     public int shootingRange = 12;
     public bool isShooting;
     public bool movingY;
     public bool movingX;
     public bool moving;
-    public bool isExploding;
-    public bool halfExploded;
-    public bool knockbackDone;
     public bool touchingPlayer;
-    public bool inCircle;
+    public bool slashing;
     public bool atStartingPosition;
     public Vector2 startingPosition;
     public Vector2 lastDirection;
@@ -35,6 +33,7 @@ public class NPC_1 : MonoBehaviour
         startingPosition = transform.position;
         player = GameObject.FindGameObjectWithTag("Player");
         playerMovement = player.GetComponent<PlayerMovement>();
+        timeSystem = GameObject.FindGameObjectWithTag("TimeSystem").GetComponent<TimeSystem>();
     }
 
     // Update is called once per frame
@@ -46,7 +45,7 @@ public class NPC_1 : MonoBehaviour
         distanceToPlayer = new Vector2(Mathf.Abs(player.transform.position.x - gameObject.transform.position.x), Mathf.Abs(player.transform.position.y - gameObject.transform.position.y));
 
         // Check if the player is within range
-        if (distanceToPlayer.magnitude <= range && !isShooting)
+        if (distanceToPlayer.magnitude <= range && !isShooting && !playerMovement.inCircle)
         {
             inRange = true;
         }
@@ -55,8 +54,17 @@ public class NPC_1 : MonoBehaviour
             inRange = false;
         }
 
+        if (touchingPlayer)
+        {
+            animator.SetBool("Slashing", true);
+        }
+        else
+        {
+            animator.SetBool("Slashing", false);
+        }
+
         // Move towards the player if in range and not stopped
-        if (inRange && !isShooting && !touchingPlayer && !isExploding)
+        if (inRange && !isShooting && !touchingPlayer && !playerMovement.inCircle)
         {
             MoveTowardsPlayer();
             atStartingPosition = false;
@@ -68,39 +76,24 @@ public class NPC_1 : MonoBehaviour
         }
 
         // Shoot a projectile if the player is within shooting range and not too close
-        if (distanceToPlayer.magnitude <= shootingRange && distanceToPlayer.magnitude >= range && !isShooting && !isExploding)
+        if (distanceToPlayer.magnitude <= shootingRange && distanceToPlayer.magnitude >= range && !isShooting)
         {
             StartCoroutine(ShootProjectile());
             isShooting = true;
             animator.SetBool("Shooting", true);
         }
+
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        if (stateInfo.IsName("Slash") && stateInfo.normalizedTime >= 1.0f && slashing)
+        {
+            animator.SetBool("Slashing", false);
+        }
+
         // Update the moving state based on the change in position
         Vector2 delta = (Vector2)transform.position - previousPosition;
         moving = delta.sqrMagnitude > 0.00001f;
         if (moving) lastDirection = delta;
         UpdateAnimation();
-
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        // Check if the NPC is in the "Explode" animation state and apply knockback to the player after a certain time
-        if (stateInfo.IsName("Explode") && stateInfo.normalizedTime >= 0.3f && !knockbackDone)
-        {
-            knockbackDone = true;
-            animator.SetBool("IdleDown", false);
-            animator.SetBool("IdleUp", false);
-            animator.SetBool("IdleLeft", false);
-            animator.SetBool("IdleRight", false);
-            animator.SetBool("WalkDown", false);
-            animator.SetBool("WalkUp", false);
-            animator.SetBool("WalkLeft", false);
-            animator.SetBool("WalkRight", false);
-            ExplodeKnockback();
-        }
-        // Check if the NPC has finished the "Explode" animation and deactivate it
-        if (stateInfo.IsName("Explode") && stateInfo.normalizedTime >= 1.0f && !halfExploded)
-        {
-            gameObject.SetActive(false);
-            halfExploded = true;
-        }
     }
     void UpdateAnimation()
     {
@@ -110,24 +103,27 @@ public class NPC_1 : MonoBehaviour
         bool left = horizontal && lastDirection.x < 0;
         bool up = !horizontal && lastDirection.y > 0;
         bool down = !horizontal && lastDirection.y < 0;
+        slashing = animator.GetBool("Slashing");
 
-        animator.SetBool("WalkRight", !isExploding && !atStartingPosition && moving && right);
-        animator.SetBool("WalkLeft", !isExploding && !atStartingPosition && moving && left);
-        animator.SetBool("WalkUp", !isExploding && !atStartingPosition && moving && up);
-        animator.SetBool("WalkDown", !isExploding && !atStartingPosition && moving && down);
+        animator.SetBool("WalkRight", !slashing && !atStartingPosition && moving && right);
+        animator.SetBool("WalkLeft", !slashing && !atStartingPosition && moving && left);
+        animator.SetBool("WalkUp", !slashing && !atStartingPosition && moving && up);
+        animator.SetBool("WalkDown", !slashing && !atStartingPosition && moving && down);
 
-        animator.SetBool("IdleRight", !isExploding && !atStartingPosition && !isShooting && !moving && right);
-        animator.SetBool("IdleLeft", !isExploding && !atStartingPosition && !isShooting && !moving && left);
-        animator.SetBool("IdleUp", !isExploding && !atStartingPosition && !isShooting && !moving && up);
-        animator.SetBool("IdleDown", !isExploding && !atStartingPosition && !isShooting && !moving && down);
+        animator.SetBool("IdleRight", !slashing && !atStartingPosition && !isShooting && !moving && right);
+        animator.SetBool("IdleLeft", !slashing && !atStartingPosition && !isShooting && !moving && left);
+        animator.SetBool("IdleUp", !slashing && !atStartingPosition && !isShooting && !moving && up);
+        animator.SetBool("IdleDown", !slashing && !atStartingPosition && !isShooting && !moving && down);
     }
     public IEnumerator ShootProjectile()
     {
-        Instantiate(projectilePrefab, gameObject.transform.position, Quaternion.identity);
+        if (!slashing)
+        {
+            Instantiate(projectilePrefab, gameObject.transform.position, Quaternion.identity);
+        }
         yield return new WaitForSeconds(1f);
         isShooting = false;
         animator.SetBool("Shooting", false);
-
     }
 
 
@@ -233,51 +229,30 @@ public class NPC_1 : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             touchingPlayer = true;
-            isExploding = true;
-            animator.SetBool("Explode", true);
-
-            gameObject.GetComponent<Collider2D>().enabled = false;
+            animator.SetBool("Slashing", true);
             playerMovement.knockback = true;
         }
-        else
+    }
+
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
         {
-            touchingPlayer = false;
+            touchingPlayer = true;
+            animator.SetBool("Slashing", true);
+            Vector2 directionToPlayer = player.transform.position - transform.position;
+            player.GetComponent<Rigidbody2D>().AddForce(directionToPlayer * 30f, ForceMode2D.Impulse);
+            
         }
     }
 
-    void ExplodeKnockback()
+    private void OnTriggerExit2D(Collider2D collision)
     {
-        Vector2 directionToPlayer = player.transform.position - transform.position;
-
-        if (directionToPlayer == Vector2.zero) directionToPlayer = Vector2.down;
-        knockback(directionToPlayer.normalized);
-    }
-
-    public void knockback(Vector2 direction)
-    {
-        playerMovement.projectileScript.knockback = true;
-        playerMovement.knockback = true;
-        player.GetComponent<Rigidbody2D>().AddForce(direction * 70f, ForceMode2D.Impulse); // Apply knockback force to the player
-    }
-
-    public void ResetNPC()
-    {
-        isExploding = false;
-        isShooting = false;
-        halfExploded = false;
-        knockbackDone = false;
-        touchingPlayer = false;
-        inRange = false;
-        movingX = false;
-        movingY = false;
-        atStartingPosition = true;
-
-        transform.position = startingPosition;
-        targetPosition = startingPosition;
-        lastDirection = Vector2.down;
-
-        GetComponent<Collider2D>().enabled = true;
-        animator.SetBool("Explode", false);
-        animator.SetBool("Shooting", false);
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            playerMovement.StartCoroutine(playerMovement.KnockBackEnd());
+            touchingPlayer = false;
+            animator.SetBool("Slashing", false);
+        }
     }
 }
