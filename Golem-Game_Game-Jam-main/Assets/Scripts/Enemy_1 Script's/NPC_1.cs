@@ -128,7 +128,6 @@ public class NPC_1 : MonoBehaviour
         yield return new WaitForSeconds(1f);
         isShooting = false;
         animator.SetBool("Shooting", false);
-
     }
 
 

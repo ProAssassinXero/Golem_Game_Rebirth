@@ -564,6 +564,9 @@ MonoBehaviour:
 
     UI & VFX Artist: Gabriel Fernande
 
+    Asset Creation: Aftab
+    Syed
+
 
 '
   m_isRightToLeft: 0
@@ -1567,6 +1570,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameOverScript
   timeSystem: {fileID: 0}
   collectionSystem: {fileID: 0}
+  controlScreen: {fileID: 0}
   gameOver: {fileID: 0}
   credits: {fileID: 1206181743}
   totalTime: 0

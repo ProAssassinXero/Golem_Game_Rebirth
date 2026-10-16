@@ -6,6 +6,7 @@ public class GameOverScript : MonoBehaviour
 {
     public TimeSystem timeSystem;
     public CollectionSystem collectionSystem;
+    public GameObject controlScreen;
     public GameObject gameOver;
     public GameObject credits;
     public float totalTime;
@@ -20,7 +21,7 @@ public class GameOverScript : MonoBehaviour
     }
     void Update()
     {
-        if (SceneManager.GetActiveScene().buildIndex == 0)
+        if (SceneManager.GetActiveScene().buildIndex == 1)
         {
             if (timeSystem.time <= 0.9f)
             {
@@ -50,7 +51,7 @@ public class GameOverScript : MonoBehaviour
     // Update is called once per frame
     public void Restart()
     {
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
         gameOver.SetActive(true);
         Time.timeScale = 1;
         timeSystem.time = 60;
@@ -60,11 +61,11 @@ public class GameOverScript : MonoBehaviour
     }
     public void MainMenu()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(0);
     }
     public void StartGame()
     {
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
     }
     public void CloseCredits()
     {
@@ -77,6 +78,16 @@ public class GameOverScript : MonoBehaviour
     public void QuitGame()
     {
         Application.Quit();
+    }
+    public void openControlScreen()
+    {
+        Time.timeScale = 0;
+        controlScreen.SetActive(true);
+    }
+    public void closeControlScreen()
+    {
+        Time.timeScale = 1;
+        controlScreen.SetActive(false);
     }
 
 }
