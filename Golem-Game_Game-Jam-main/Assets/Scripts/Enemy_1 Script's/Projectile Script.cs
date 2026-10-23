@@ -6,6 +6,7 @@ public class ProjectileScript : MonoBehaviour
 {
     public TimeSystem timeSystem;
     public PlayerMovement playerMovement;
+    public Animator animator;
     public GameObject player;
     public GameObject npc;
     public Vector2 direction;
@@ -15,12 +16,15 @@ public class ProjectileScript : MonoBehaviour
     public Vector2 finalDestination;
     private bool initialized = false;
     public bool knockback;
-
+    public GameOverScript gameOverScript;
+    public GameObject playerHitSound;
     void Start()
     {
         timeSystem = GameObject.FindGameObjectWithTag("TimeSystem").GetComponent<TimeSystem>();
         player = GameObject.FindGameObjectWithTag("Player");
         playerMovement = player.GetComponent<PlayerMovement>();
+        animator = GetComponent<Animator>();
+        gameOverScript = GameObject.FindGameObjectWithTag("GameOver").GetComponent<GameOverScript>();
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -32,6 +36,8 @@ public class ProjectileScript : MonoBehaviour
             gameObject.GetComponent<Collider2D>().enabled = false; // Disable the collider to prevent further collisions
             gameObject.GetComponent<SpriteRenderer>().enabled = false; // Optionally hide the projectile visually
             player.GetComponent<Rigidbody2D>().AddForce(direction * 10f, ForceMode2D.Impulse); // Apply knockback force to the player
+            Instantiate(playerHitSound, transform.position, Quaternion.identity); // Play the player hit sound
+            gameOverScript = GameObject.FindGameObjectWithTag("GameOver").GetComponent<GameOverScript>();
         }
 
         if (collision.gameObject.CompareTag("Circle"))
@@ -70,6 +76,13 @@ public class ProjectileScript : MonoBehaviour
         if (!initialized) return;
         // Move the projectile towards the final destination
         transform.position = Vector2.MoveTowards(transform.position, finalDestination, speed * Time.deltaTime);
+        transform.rotation = Quaternion.LookRotation(Vector3.forward, direction); // Rotate the projectile to face the direction of movement
+
+        // Destroy the projectile if the game is over
+        if (gameOverScript.isGameOver)
+        {
+            Destroy(gameObject);
+        }
 
         // Destroy the projectile if it reaches the final destination
         if (((Vector2)transform.position - finalDestination).sqrMagnitude < 0.0001f)
@@ -79,7 +92,6 @@ public class ProjectileScript : MonoBehaviour
         if (playerMovement.inCircle)
         {
             Destroy(gameObject);
-
         }
     }
 

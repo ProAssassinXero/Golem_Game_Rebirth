@@ -1,9 +1,11 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TimeSystem : MonoBehaviour
 {
     public CollectionSystem collectionSystem;
+    public GameObject player;
     // Store the last drop-off count to calculate the difference
     public TextMeshProUGUI timeText;
     public float time = 60f;
@@ -30,8 +32,18 @@ public class TimeSystem : MonoBehaviour
         // Ensure time does not go below zero
         if (time <= 0)
         {
-            time = 0;
+            time = 0; // Disable the player GameObject when time reaches zero
             timeText.text = "0";
+        }
+
+        // Enable or disable the player GameObject based on the time value
+        if (time >= 0.9f)
+        {
+            player.SetActive(true);
+        }
+        else if (time < 0.9f)
+        {
+            player.SetActive(false);
         }
 
         // Ensure time does not exceed maxTime
@@ -45,28 +57,5 @@ public class TimeSystem : MonoBehaviour
     public void DashTimeLoss()
     {
         time -= 5f;
-    }
-
-    // Method to store the system and calculate time based on the color of the storeRep images
-    public void StoreSystem()
-    {
-        for (int i = 0; i < collectionSystem.storeRep.Length; i++)
-        {
-            if (collectionSystem.storeRep[i].color == Color.red)
-            {
-                time += 20f;
-                collectionSystem.storeRep[i].color = Color.white;
-            }
-            else if (collectionSystem.storeRep[i].color == Color.yellow)
-            {
-                time += 5f;
-                collectionSystem.storeRep[i].color = Color.white;
-            }
-            else if (collectionSystem.storeRep[i].color == Color.green)
-            {
-                time += 2f;
-                collectionSystem.storeRep[i].color = Color.white;
-            }
-        }
     }
 }

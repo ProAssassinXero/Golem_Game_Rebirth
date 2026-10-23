@@ -8,8 +8,8 @@ public class PlayerMovement : MonoBehaviour
     public RoomScript roomScript;
     public ProjectileScript projectileScript;
     public NPC_2[] nPC_2s;
-    public Camera camera;
     public float speed = 5f;
+    public float originalSpeed;
     public float dashSpeed = 20f;
     public float dashDuration = 0.1f;
     public bool inCircle;
@@ -29,13 +29,12 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animation = GetComponent<Animator>();
         roomScript = GameObject.FindGameObjectWithTag("RoomScript").GetComponent<RoomScript>();
+        originalSpeed = speed;
     }
 
     // Update is called once per frame
     void Update()
     {
-        camera.transform.position = new Vector3(transform.position.x, transform.position.y, camera.transform.position.z);
-
         moveDir = Vector2.zero;
 
         if (Input.GetKeyDown(KeyCode.LeftShift) && timeSystem.time >= 10f)
@@ -145,12 +144,12 @@ public class PlayerMovement : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        if (projectileScript == null && !knockback && !projectileScript.knockback)
+        if (projectileScript == null && !knockback)
         {
             rb.linearVelocity = moveDir * speed;
             return;
         }
-        if (!projectileScript.knockback && !knockback)
+        if (!projectileScript.knockback && !knockback && !projectileScript.knockback)
         {
             rb.linearVelocity = moveDir * speed;
         }
@@ -162,6 +161,11 @@ public class PlayerMovement : MonoBehaviour
         {
             StartCoroutine(ExplodeKnockBackEnd());
         }
+
+        if(timeSystem.time <= 0.999f)
+        {
+            gameObject.SetActive(false);
+        }
     }
 
     // Coroutine to handle dashing
@@ -169,7 +173,7 @@ public class PlayerMovement : MonoBehaviour
     {
         speed = dashSpeed;
         yield return new WaitForSeconds(dashDuration);
-        speed = 5f;
+        speed = originalSpeed;
         timeSystem.DashTimeLoss();
     }
     public IEnumerator KnockBackEnd()
@@ -212,7 +216,7 @@ public class PlayerMovement : MonoBehaviour
             inCircle = true;
         }
     }
-    
+
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Circle"))

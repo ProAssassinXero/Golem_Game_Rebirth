@@ -15,6 +15,7 @@ TagManager:
   - RoomScript
   - groundFloorStairs
   - firstFloorStairs
+  - GameOver
   layers:
   - Default
   - TransparentFX

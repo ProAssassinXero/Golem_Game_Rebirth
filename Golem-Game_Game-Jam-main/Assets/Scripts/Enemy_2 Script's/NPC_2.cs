@@ -5,6 +5,7 @@ public class NPC_2 : MonoBehaviour
 {
     public GameObject player;
     public GameObject projectilePrefab;
+    public GameOverScript gameOverScript;
     public PlayerMovement playerMovement;
     public TimeSystem timeSystem;
     public Animator animator;
@@ -24,6 +25,7 @@ public class NPC_2 : MonoBehaviour
     public Vector2 lastDirection;
     public Vector2 distanceToPlayer;
     public Vector2 targetPosition;
+    public GameObject SlashSound;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -34,6 +36,7 @@ public class NPC_2 : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
         playerMovement = player.GetComponent<PlayerMovement>();
         timeSystem = GameObject.FindGameObjectWithTag("TimeSystem").GetComponent<TimeSystem>();
+        gameOverScript = GameObject.FindGameObjectWithTag("GameOver").GetComponent<GameOverScript>();
     }
 
     // Update is called once per frame
@@ -45,7 +48,7 @@ public class NPC_2 : MonoBehaviour
         distanceToPlayer = new Vector2(Mathf.Abs(player.transform.position.x - gameObject.transform.position.x), Mathf.Abs(player.transform.position.y - gameObject.transform.position.y));
 
         // Check if the player is within range
-        if (distanceToPlayer.magnitude <= range && !isShooting && !playerMovement.inCircle)
+        if (distanceToPlayer.magnitude <= range && !isShooting && !playerMovement.inCircle && !gameOverScript.isGameOver)
         {
             inRange = true;
         }
@@ -76,7 +79,7 @@ public class NPC_2 : MonoBehaviour
         }
 
         // Shoot a projectile if the player is within shooting range and not too close
-        if (distanceToPlayer.magnitude <= shootingRange && distanceToPlayer.magnitude >= range && !isShooting)
+        if (distanceToPlayer.magnitude <= shootingRange && distanceToPlayer.magnitude >= range && !isShooting && !gameOverScript.isGameOver)
         {
             StartCoroutine(ShootProjectile());
             isShooting = true;
@@ -231,6 +234,8 @@ public class NPC_2 : MonoBehaviour
             touchingPlayer = true;
             animator.SetBool("Slashing", true);
             playerMovement.knockback = true;
+            Instantiate(SlashSound, transform.position, Quaternion.identity);
+            timeSystem.time -= 10f;
         }
     }
 
@@ -242,7 +247,6 @@ public class NPC_2 : MonoBehaviour
             animator.SetBool("Slashing", true);
             Vector2 directionToPlayer = player.transform.position - transform.position;
             player.GetComponent<Rigidbody2D>().AddForce(directionToPlayer * 30f, ForceMode2D.Impulse);
-            
         }
     }
 

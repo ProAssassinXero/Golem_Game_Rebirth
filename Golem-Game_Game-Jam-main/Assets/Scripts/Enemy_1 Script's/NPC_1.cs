@@ -6,6 +6,7 @@ public class NPC_1 : MonoBehaviour
     public GameObject player;
     public GameObject projectilePrefab;
     public PlayerMovement playerMovement;
+    public GameOverScript gameOverScript;
     public TimeSystem timeSystem;
     public Animator animator;
     public bool inRange;
@@ -26,6 +27,8 @@ public class NPC_1 : MonoBehaviour
     public Vector2 lastDirection;
     public Vector2 distanceToPlayer;
     public Vector2 targetPosition;
+    public GameObject explosionSound;
+    public bool explosionSoundOnce;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -101,6 +104,14 @@ public class NPC_1 : MonoBehaviour
         {
             gameObject.SetActive(false);
             halfExploded = true;
+            animator.SetBool("IdleDown", false);
+            animator.SetBool("IdleUp", false);
+            animator.SetBool("IdleLeft", false);
+            animator.SetBool("IdleRight", false);
+            animator.SetBool("WalkDown", false);
+            animator.SetBool("WalkUp", false);
+            animator.SetBool("WalkLeft", false);
+            animator.SetBool("WalkRight", false);
         }
     }
     void UpdateAnimation()
@@ -238,6 +249,14 @@ public class NPC_1 : MonoBehaviour
 
             gameObject.GetComponent<Collider2D>().enabled = false;
             playerMovement.knockback = true;
+
+
+
+            if (explosionSoundOnce == false)
+            {
+                explosionSoundOnce = true;
+                Instantiate(explosionSound, transform.position, Quaternion.identity);
+            }
         }
         else
         {

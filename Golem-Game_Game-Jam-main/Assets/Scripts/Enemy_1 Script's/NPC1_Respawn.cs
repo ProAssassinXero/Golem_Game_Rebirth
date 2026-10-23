@@ -29,7 +29,7 @@ public class NPC1_Respawn : MonoBehaviour
 
         npc[index].GetComponent<NPC_1>().ResetNPC();
         npc[index].SetActive(true);
-
+        npc[index].GetComponent<NPC_1>().explosionSoundOnce = false;
         isRespawning[index] = false;
     }
 }
